@@ -45,3 +45,11 @@ logs/
 # Local configuration
 .jupyter/
 jupyter_notebook_config.py
+
+
+# -- Philipp's working files --
+doc_chunks/
+df_query_dev_top50.pkl
+df_query_train_top50.pkl
+df_query_train_reranked_scibert.pkl
+df_query_dev_reranked_scibert.pkl
