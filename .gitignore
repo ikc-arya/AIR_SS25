@@ -53,3 +53,9 @@ df_query_dev_top50.pkl
 df_query_train_top50.pkl
 df_query_train_reranked_scibert.pkl
 df_query_dev_reranked_scibert.pkl
+colbert_scibert_finetune-1
+doc_chunks-finetune-1
+doc_embeddings_colB_sciB_2
+doc_embeddings_colB_sciB_3
+colB_sciB_2
+colB_sciB_3
