@@ -2,6 +2,22 @@
 
 ## Steps to the best result with BM25
 
+
+### Third iteration of changes (trying to extract more useful data from the training set)
+Analyzed empirically other features of the training set:
+1. mentions: are very rare in the training set (only 4/12853 queries in the training set have mentions) 
+   - decided to ignore them
+2. authors: often mentioned in the tweets without preceding @ - tried to extract them and move them through the same 
+    preprocessing pipeline as the rest of the text on both queries and documents side but the achieved results were slightly worse:\
+Results on the train set: {1: 0.5268808838403486, 5: 0.5814154931403822, 10: 0.5814154931403822}\
+Results on the dev set: {1: 0.5107142857142857, 5: 0.5703452380952381, 10: 0.5703452380952381}\
+This can probably be explained by the fact that the authors are not always mentioned in the same way in the tweets and the documents.
+This leads to minimal to no improvement in the BM25 technique that relies on exact matching of the terms.
+   - decided to ignore them
+3. journals: 
+4. hashtags:
+
+
 ### Second iteration of changes (evaluating different spacy models)
 - Added argument `terms_extractor` to the function `preprocess_text` to control the terms extraction model
 - Installed the following models: [
