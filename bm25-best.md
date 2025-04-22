@@ -3,19 +3,93 @@
 ## Steps to the best result with BM25
 
 
+### Fifth iteration of changes (extract synonyms before stemming + keep numbers)
+- Tried to extract synonyms before stemming to see if it would help improve the results but it didn't
+- Decided to keep the numbers in the text as they are important for the scientific discourse, results were slightly better:
+
+| Set   | Top-K | Score     |
+|--------|--------|------------|
+| Train | 1     | 0.5573 |
+| Train | 5     | 0.6095 |
+| Train | 10     | 0.6095 |
+| Dev   | 1     | 0.5479 |
+| Dev   | 5     | 0.5992 |
+| Dev   | 10     | 0.5992 |
+
+
+### Fourth iteration of changes (comparing different BM25 scoring models)
+
+Compared different BM25 scoring models available in the rank_bm25 library.
+
+1. Created a function `compare_bm25_models` that can evaluate different BM25 model variants
+2. Added a `sample_size` parameter to control how much data is used for evaluation
+3. Compared three BM25 models with default parameters:
+   - BM25Okapi: The original BM25 algorithm
+   - BM25L: A variant that addresses the issue with long documents
+   - BM25Plus: Another variant with improved handling of term frequency saturation
+
+The comparison was performed on the full training dataset to ensure statistically significant and reliable results that better represent real-world performance.
+
+#### Results:
+
+##### Results on the train set:
+| Model | Top-1 | Top-5 | Top-10 |
+|-------|-------|-------|--------|
+| BM25Okapi | 0.5269 | 0.5814 | 0.5814 |
+| BM25L | 0.1989 | 0.2753 | 0.2753 |
+| BM25Plus | 0.5312 | 0.5863 | 0.5863 |
+
+
+##### Results on the dev set:
+| Model | Top-1 | Top-5 | Top-10 |
+|-------|-------|-------|--------|
+| BM25Okapi | 0.5107 | 0.5703 | 0.5703 |
+| BM25L | 0.2114 | 0.2816 | 0.2816 |
+| BM25Plus | 0.5186 | 0.5769 | 0.5769 |
+
+
+#### Analysis:
+
+BM25Okapi and BM25Plus performed similarly well, with BM25Plus slightly outperforming BM25Okapi in both the training and development sets. BM25L, on the other hand, significantly underperformed compared to the other two models.\
+This is due to the fact that BM25L is designed to handle long documents better, but in our case, the documents are relatively short and do not require this adjustment.\
+We will stick with BM25Plus for the final model as it provides a good balance between performance and complexity.
+
+Final results with BM25Plus:
+
+| Set   | Top-K | Score     |
+|--------|--------|------------|
+| Train | 1     | 0.5312 |
+| Train | 5     | 0.5863 |
+| Train | 10     | 0.5863 |
+| Dev   | 1     | 0.5186 |
+| Dev   | 5     | 0.5769 |
+| Dev   | 10     | 0.5769 |
+
+
 ### Third iteration of changes (trying to extract more useful data from the training set)
 Analyzed empirically other features of the training set:
 1. mentions: are very rare in the training set (only 4/12853 queries in the training set have mentions) 
    - decided to ignore them
 2. authors: often mentioned in the tweets without preceding @ - tried to extract them and move them through the same 
     preprocessing pipeline as the rest of the text on both queries and documents side but the achieved results were slightly worse:\
-Results on the train set: {1: 0.5268808838403486, 5: 0.5814154931403822, 10: 0.5814154931403822}\
-Results on the dev set: {1: 0.5107142857142857, 5: 0.5703452380952381, 10: 0.5703452380952381}\
-This can probably be explained by the fact that the authors are not always mentioned in the same way in the tweets and the documents.
+
+| Set   | Top-K | Score     |
+|-------|-------|-----------|
+| Train | 1     | 0.5269    |
+| Train | 5     | 0.5814    |
+| Train | 10    | 0.5814    |
+| Dev   | 1     | 0.5107    |
+| Dev   | 5     | 0.5703    |
+| Dev   | 10    | 0.5703    |
+
+This can probably be explained by the fact that the authors are not always mentioned in the same way in the tweets and the documents.\
+This could due to misspellings, different forms of the name (e.g. first name + last name vs. last name + first name), or even different names altogether (e.g. a nickname).
 This leads to minimal to no improvement in the BM25 technique that relies on exact matching of the terms.
+- decided to ignore them
+3. journals: the journal titles are very specific and rarely mentioned in the tweets of the training set. 
+   - decided to ignore them 
+4. hashtags: are very specific and usually combined of multiple words, meaning they wouldn't contribute match to plain words matching that bm25 is based on 
    - decided to ignore them
-3. journals: 
-4. hashtags:
 
 
 ### Second iteration of changes (evaluating different spacy models)
@@ -36,9 +110,6 @@ This leads to minimal to no improvement in the BM25 technique that relies on exa
 | en_core_sci_md | 0.55 | 0.6162 | 0.6162 |
 - `en_core_web_md` seemed to be more stable for different samples so it was decided to take it as the default model
 - Reran the entire process with `en_core_web_md` and the results were as follows:
-
-Results on the train set: {1: 0.5258694468217536, 5: 0.581183381311756, 10: 0.581183381311756}
-Results on the dev set: {1: 0.5185714285714286, 5: 0.5752261904761904, 10: 0.5752261904761904}
 
 | Set   | Top-K | Score     |
 |--------|--------|------------|
@@ -61,9 +132,6 @@ Other parameters should be considered for further tuning.
 - Fixed preprocess_text to extract extra terms into whitespace separated string instead of list
 - Cleaned up unused blocks of code, comments, installs and imports
 
-Results on the train set: {1: 0.5299151948961331, 5: 0.5845055629036022, 10: 0.5845055629036022}
-Results on the dev set: {1: 0.5242857142857142, 5: 0.5785357142857143, 10: 0.5785357142857143}
-
 | Set   | Top-K | Score     |
 |--------|--------|------------|
 | Train | 1     | 0.5299 |
@@ -75,9 +143,6 @@ Results on the dev set: {1: 0.5242857142857142, 5: 0.5785357142857143, 10: 0.578
 
 
 ## Noor's original results:
-Results on the train set: {1: 0.5221349101377111, 5: 0.5746868435384734, 10: 0.5746868435384734)}
-Results on the dev set: {1: 0.5185714285714286, 5: 0.5740119047619048, 10: 0.5740119047619048)}
-
 | Set   | Top-K | Score     |
 |--------|--------|-----------|
 | Train | 1     | 0.5221 |
@@ -88,7 +153,11 @@ Results on the dev set: {1: 0.5185714285714286, 5: 0.5740119047619048, 10: 0.574
 | Dev   | 10    | 0.5740 |
 
 ## Original baseline results:
-Results on the train set: {1: 0.5081303975725512, 5: 0.5509777224513084, 10: np.0.5559614579512657}
-Results on the dev set: {1: 0.5057142857142857, 5: 0.5522738095238094, 10: 0.557658163265306}
-
-
+| Set   | Top-K | Score     |
+|-------|-------|-----------|
+| Train | 1     | 0.5081    |
+| Train | 5     | 0.5510    |
+| Train | 10    | 0.5560    |
+| Dev   | 1     | 0.5057    |
+| Dev   | 5     | 0.5523    |
+| Dev   | 10    | 0.5577    |
