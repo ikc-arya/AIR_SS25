@@ -4,31 +4,66 @@
 
 
 ### Seventh iteration of changes (Including the authors of the document)
-As previously stated, mentions are very rare in the query set which could indicate that the authors behind the papers are rarely mentioned. The authors could however still be namned in the query, but not by mentions. For this reason another strategy used was to include the name of the authors in the tokens representing the document.
-This offered now improvment in MRR-score on the development set of queries (as shown below), and also introduced the problem of potiential false matches, where a authors could share a first name with authors of the actual article that is referenced by the tweet, without having anything to do with the article.
-![bild](https://github.com/user-attachments/assets/37f26884-6fbe-4148-898f-4146e2e97bb8)
+As previously stated, mentions are very rare in the query set which could indicate that the authors behind the 
+papers are rarely mentioned. The authors could however still be named in the query, but not by mentions. For this reason
+another strategy used was to include the name of the authors in the tokens representing the document.
+This resulted in a slightly worse MRR-score on the development set of queries (as shown below), and also introduced 
+the problem of potential false matches, where authors could share the first name with authors of the actual article 
+that is referenced by the tweet, without having anything to do with the article.
 
-Too reduce the risk of false matches the last names are extracted from the authors name before they are appened to the tokens representing the document. Only a small improvment was seen in the MRR-score but is still kept since in theory it should improve matching, the small improvment on the MRR-score could just be the effect of few author names being mentioned in training or test data, while it could still be a factor in other query-sets
-![bild](https://github.com/user-attachments/assets/15659fa8-6d3d-439a-aa18-0c2dc104806f)
+| Set   | Top-K | Score     |
+|--------|--------|------------|
+| Train | 1     | 0.5733 |
+| Train | 5     | 0.6253 |
+| Train | 10     | 0.6309 |
+| Dev   | 1     | 0.5657 |
+| Dev   | 5     | 0.6121 |
+| Dev   | 10     | 0.6161 |
 
+To reduce the risk of false matches the last names are extracted from the authors name before they are appended 
+to the tokens representing the document. Only a small improvement was seen in the MRR-score comparing to the full 
+name inclusion but the total result was still slightly worse than the one from sixth iteration. 
 
+| Set   | Top-K | Score     |
+|--------|--------|------------|
+| Train | 1     | 0.5733 |
+| Train | 5     | 0.6253 |
+| Train | 10     | 0.6309 |
+| Dev   | 1     | 0.5657 |
+| Dev   | 5     | 0.6161 |
+| Dev   | 10     | 0.6224 |
 
 
 
 ### Sixth iteration of changes (Synonym lookups)
-Previous versions have been using the spaCy library for namned entity recognition, entities that where then appended to the tokenized string of the document. The spaCy library is quite general, and in some cases the namned entities identified didn't offer improvment in retriving the documents. Focusing on more topic specific ways of improving the results could offer an advantage. Since the queries come from social media, in the form of tweets which a lot of times are not written with a scientific language in mind, one option is to use a thesaurus to look up synonyms for terms that are commonly used when talking about the COVID-19 pandemic.
+Previous versions have been using the spaCy library for named entity recognition, entities that where then appended to the tokenized string of the document. The spaCy library is quite general, and in some cases the named entities identified didn't offer improvment in retriving the documents. Focusing on more topic specific ways of improving the results could offer an advantage. Since the queries come from social media, in the form of tweets which a lot of times are not written with a scientific language in mind, one option is to use a thesaurus to look up synonyms for terms that are commonly used when talking about the COVID-19 pandemic.
 One such thesaurus has been created by Patricia Fener and is available at: https://loterre.istex.fr/C0X/en/ with the following description:
 "This bilingual thesaurus (French-English), developed at Inist-CNRS, covers the concepts from the emerging COVID-19 outbreak which reminds the past SARS coronavirus outbreak and Middle East coronavirus outbreak. This thesaurus is based on the vocabulary used in scientific publications for SARS-CoV-2 and other coronaviruses, like SARS-CoV and MERS-CoV. It provides a support to explore the coronavirus infectious diseases."
 
-This thesaurus is used as a lookup when normalizing all the tokens in the corpus, as well as the queries, to one specific key. Too achive this the file was filtered to only contain a word that acted as the key, which was the word that all synonyms was converted to, and values which where all synonyms to the key. 
+This thesaurus is used as a lookup when normalizing all the tokens in the corpus, as well as the queries, to one specific key. 
+To achieve this the file was filtered to only contain a word that acted as the key, which was the word that all synonyms 
+was converted to, and values which where all synonyms to the key. 
 
-The first strategy applied was too do a synonym normalization before other pre-processing and before spaCy was used for namned entity recognition.
+The first strategy applied was to do a synonym normalization before other pre-processing and before spaCy was used 
+for named entity recognition.
 
-The score for this strategy was as shown below, and offered no improvment over using only spaCy  
-![bild](https://github.com/user-attachments/assets/b760974f-97bc-43c5-97bd-63fbf5295b17)
+This strategy offered no improvement over using only spaCy.
 
-However without using the spaCy library for namned entity recognition, the results where improved, as shown below. One reason for this improvment could be that the way spaCy was implemented meant that the namned entities where added too the end of the string that was tokenized, and no differentiation was made between tokens from the title, abstract or if they came from the namned entities. A potential problem that could arrise from this is that words that where not significant to the topic of the document or the tweet where given more significance since they appeared an extra time because of identified namned entities being appended to the document string. 
-![bild](https://github.com/user-attachments/assets/2ccaeda7-c6b8-478e-b20b-dd2c5839a2fc)
+However without using the spaCy library for named entity recognition, the results were improved, as shown below. 
+One reason for this improvement could be that the way spaCy was implemented meant that the named entities where added 
+to the end of the string that was tokenized, and no differentiation was made between tokens from the title, 
+abstract or if they came from the named entities. A potential problem that could arise from this is that words 
+that where not significant to the topic of the document or the tweet were given more significance since they appeared 
+an extra time because of identified named entities being appended to the document string.
+
+| Set   | Top-K | Score     |
+|--------|--------|------------|
+| Train | 1     | 0.5721 |
+| Train | 5     | 0.6243 |
+| Train | 10     | 0.6299 |
+| Dev   | 1     | 0.5657 |
+| Dev   | 5     | 0.6176 |
+| Dev   | 10     | 0.6231 |
 
 
 ### Fifth iteration of changes (extract synonyms before stemming + keep numbers)
