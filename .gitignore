@@ -1,6 +1,8 @@
 # Jupyter Notebook
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
+doc_embeddings_allenai/*
+bm25/predictions.tsv
 
 # Python
 __pycache__/
